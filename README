@@ -36,8 +36,8 @@ Jindong Zhang, Icenowy Zheng, ZhUyU1997, and Zou Chang Wei.
 
 ERROR REPORTS
 
-Please send errors and suggestions to Frans Kaashoek and Robert Morris
-(kaashoek, rtm@mit.edu). The main purpose of rv6 is as a teaching
+Please send errors and suggestions to 0x16000
+(openbsd.gnu@gmail.com). The main purpose of rv6 is as a teaching
 operating system for MIT's 6.1810, so we are more interested in
 simplifications and clarifications than new features.
 
