@@ -36,11 +36,46 @@ void concat_str(char *dest, const char *src) {
     *dest = '\0';
 }
 
+void gets_with_backspace(char *buf, int max) {
+    int i = 0;
+    char c;
+    
+    while(1) {
+        if(read(0, &c, 1) != 1) {
+            buf[0] = '\0';
+            return;
+        }
+        
+        // Handle backspace (ASCII 8)
+        if(c == '\b' || c == 127) {
+            if(i > 0) {
+                i--;
+                write(1, "\b \b", 3); // Erase the character on screen
+            }
+            continue;
+        }
+        
+        // Handle enter key
+        if(c == '\n' || c == '\r') {
+            buf[i] = '\n';
+            buf[i+1] = '\0';
+            write(1, "\n", 1);
+            return;
+        }
+        
+        // Normal character
+        if(i < max-1) {
+            buf[i++] = c;
+            write(1, &c, 1); // Echo the character
+        }
+    }
+}
+
 void append_lines() {
     printf("Enter lines (single . on line to end):\n");
     while (1) {
         char buf[MAXLEN];
-        gets(buf, MAXLEN);
+        gets_with_backspace(buf, MAXLEN);
         if (buf[0] == '.' && buf[1] == '\n') {
             break;
         }
@@ -63,7 +98,7 @@ void print_lines() {
 void delete_line() {
     printf("Enter line number to delete: ");
     char buf[16];
-    gets(buf, 16);
+    gets_with_backspace(buf, 16);
     int n = atoi(buf);
     if (n < 1 || n > linecount) {
         printf("Invalid line number\n");
@@ -78,7 +113,7 @@ void delete_line() {
 void write_file() {
     if (filename[0] == '\0') {
         printf("Enter filename: ");
-        gets(filename, sizeof(filename));
+        gets_with_backspace(filename, sizeof(filename));
         // Remove newline
         filename[strlen(filename)-1] = '\0';
     }
@@ -102,7 +137,7 @@ void write_file() {
 
 void read_file() {
     printf("Enter filename: ");
-    gets(filename, sizeof(filename));
+    gets_with_backspace(filename, sizeof(filename));
     // Remove newline
     filename[strlen(filename)-1] = '\0';
 
@@ -144,7 +179,7 @@ int main(int argc, char *argv[]) {
     while (1) {
         printf("> ");
         char cmd[16];
-        gets(cmd, sizeof(cmd));
+        gets_with_backspace(cmd, sizeof(cmd));
         
         switch (cmd[0]) {
             case 'a':
