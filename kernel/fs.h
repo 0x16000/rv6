@@ -1,6 +1,8 @@
 // On-disk file system format.
 // Both the kernel and user programs use this header file.
 
+#include <stdint.h>
+
 
 #define ROOTINO  1   // root i-number
 #define BSIZE 1024  // block size
@@ -12,14 +14,14 @@
 // mkfs computes the super block and builds an initial file system. The
 // super block describes the disk layout:
 struct superblock {
-  uint magic;        // Must be FSMAGIC
-  uint size;         // Size of file system image (blocks)
-  uint nblocks;      // Number of data blocks
-  uint ninodes;      // Number of inodes.
-  uint nlog;         // Number of log blocks
-  uint logstart;     // Block number of first log block
-  uint inodestart;   // Block number of first inode block
-  uint bmapstart;    // Block number of first free map block
+  uint32 magic;        // Must be FSMAGIC
+  uint32 size;         // Size of file system image (blocks)
+  uint32 nblocks;      // Number of data blocks
+  uint32 ninodes;      // Number of inodes.
+  uint32 nlog;         // Number of log blocks
+  uint32 logstart;     // Block number of first log block
+  uint32 inodestart;   // Block number of first inode block
+  uint32 bmapstart;    // Block number of first free map block
 };
 
 #define FSMAGIC 0x10203040
