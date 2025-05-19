@@ -141,6 +141,7 @@ UPROGS=\
 	$U/_zombie\
 	$U/_touch\
 	$U/_ed\
+	$U/_clear\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
