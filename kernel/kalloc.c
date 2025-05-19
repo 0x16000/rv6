@@ -80,3 +80,17 @@ kalloc(void)
     memset((char*)r, 5, PGSIZE); // fill with junk
   return (void*)r;
 }
+
+extern struct run *freelist; // This is the free memory list
+
+int
+kfreepages(void)
+{
+     int count = 0;
+     struct run *r;
+     acquire(&kmem.lock); // Lock memory during the free page count
+     for (r = kmem.freelist; r; r = r->next)
+	     count ++;
+     release(&kmem.lock); // Unlock memory
+     return count;
+}
