@@ -28,7 +28,7 @@ int nblocks;  // Number of data blocks
 
 int fsfd;
 struct superblock sb;
-char zeroes[BSIZE];
+char zeroes[BSIZE] = {0};  // explicitly initialized
 uint freeinode = 1;
 uint freeblock;
 
@@ -135,7 +135,10 @@ main(int argc, char *argv[])
     else
       shortname = argv[i];
     
-    assert(index(shortname, '/') == 0);
+    if(strchr(shortname, '/') != NULL) {
+      fprintf(stderr, "File path contains '/': %s\n", shortname);
+      exit(1);
+    }
 
     if((fd = open(argv[i], 0)) < 0)
       die(argv[i]);
@@ -147,7 +150,10 @@ main(int argc, char *argv[])
     if(shortname[0] == '_')
       shortname += 1;
 
-    assert(strlen(shortname) <= DIRSIZ);
+    if(strlen(shortname) > DIRSIZ) {
+      fprintf(stderr, "Filename too long: %s\n", shortname);
+      exit(1);
+    }
     
     inum = ialloc(T_FILE);
 
@@ -171,6 +177,7 @@ main(int argc, char *argv[])
 
   balloc(freeblock);
 
+  close(fsfd);
   exit(0);
 }
 
@@ -222,6 +229,11 @@ rsect(uint sec, void *buf)
 uint
 ialloc(ushort type)
 {
+  if(freeinode >= NINODES) {
+    fprintf(stderr, "Out of inodes\n");
+    exit(1);
+  }
+  
   uint inum = freeinode++;
   struct dinode din;
 
@@ -236,6 +248,11 @@ ialloc(ushort type)
 void
 balloc(int used)
 {
+  if(freeblock >= FSSIZE) {
+    fprintf(stderr, "Out of disk blocks\n");
+    exit(1);
+  }
+
   uchar buf[BSIZE];
   int i;
 
@@ -263,21 +280,37 @@ iappend(uint inum, void *xp, int n)
 
   rinode(inum, &din);
   off = xint(din.size);
-  // printf("append inum %d at off %d sz %d\n", inum, off, n);
+  
   while(n > 0){
     fbn = off / BSIZE;
-    assert(fbn < MAXFILE);
+    if(fbn >= MAXFILE) {
+      fprintf(stderr, "File too large\n");
+      exit(1);
+    }
+    
     if(fbn < NDIRECT){
       if(xint(din.addrs[fbn]) == 0){
+        if(freeblock >= FSSIZE) {
+          fprintf(stderr, "Out of disk blocks\n");
+          exit(1);
+        }
         din.addrs[fbn] = xint(freeblock++);
       }
       x = xint(din.addrs[fbn]);
     } else {
       if(xint(din.addrs[NDIRECT]) == 0){
+        if(freeblock >= FSSIZE) {
+          fprintf(stderr, "Out of disk blocks\n");
+          exit(1);
+        }
         din.addrs[NDIRECT] = xint(freeblock++);
       }
       rsect(xint(din.addrs[NDIRECT]), (char*)indirect);
       if(indirect[fbn - NDIRECT] == 0){
+        if(freeblock >= FSSIZE) {
+          fprintf(stderr, "Out of disk blocks\n");
+          exit(1);
+        }
         indirect[fbn - NDIRECT] = xint(freeblock++);
         wsect(xint(din.addrs[NDIRECT]), (char*)indirect);
       }
